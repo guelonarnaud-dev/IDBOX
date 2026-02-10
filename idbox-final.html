@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IDBOX - Ton compagnon empathique</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mood-tired: #a8c7e0;
+            --mood-normal: #c4d7bf;
+            --mood-motivated: #f5b88e;
+            --bg-primary: #faf9f7;
+            --bg-secondary: #ffffff;
+            --bg-overlay: rgba(250, 249, 247, 0.95);
+            --text-primary: #3d3d3d;
+            --text-secondary: #7a7a7a;
+            --text-tertiary: #a8a8a8;
+            --border-soft: #ebe9e6;
+            --border-accent: #d8d5d1;
+            --complexity-easy: #dbe8f4;
+            --complexity-medium: #f4e8d0;
+            --complexity-hard: #f4d9d0;
+            --priority-low: #e8f4e8;
+            --priority-medium: #fff4e0;
+            --priority-high: #ffe8e8;
+            --accent-color: var(--mood-normal);
+            --shadow-subtle: 0 2px 12px rgba(0, 0, 0, 0.04);
+            --shadow-medium: 0 4px 24px rgba(0, 0, 0, 0.08);
+            --shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.12);
+            --ease-out-smooth: cubic-bezier(0.33, 1, 0.68, 1);
+            --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        .display {
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .app-header {
+            padding: 2rem 1.5rem 1rem;
+            background: var(--bg-primary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.6s var(--ease-out-smooth);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        .logo {
+            font-family: 'Fraunces', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .greeting {
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .content-section {
+            padding: 0 1.5rem 2rem;
+            display: none;
+            animation: fadeInUp 0.5s var(--ease-out-smooth);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        .section-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .mood-checkin {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 1.5rem;
+        }
+
+        .mood-question {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .mood-options {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .mood-btn {
+            flex: 1;
+            padding: 1.5rem 1rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-soft);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out-smooth);
+            text-align: center;
+        }
+
+        .mood-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .mood-btn.selected {
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color)10, var(--accent-color)20);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .mood-emoji {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+            animation: gentleBounce 3s ease-in-out infinite;
+        }
+
+        @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .mood-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .today-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .energy-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .energy-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.9); }
+        }
+
+        .task-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-subtle);
+            border-left: 4px solid var(--accent-color);
+            transition: all 0.3s var(--ease-out-smooth);
+            animation: slideIn 0.4s var(--ease-out-smooth) backwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+        }
+
+        .task-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .task-card.priority-high {
+            border-left-color: #e88585;
+        }
+
+        .task-card.priority-medium {
+            border-left-color: #f4ba8a;
+        }
+
+        .task-card.priority-low {
+            border-left-color: #c9d9c3;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .task-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .task-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+        }
+
+        .task-tag {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        .tag-complexity-easy { background: var(--complexity-easy); color: #4a7c9e; }
+        .tag-complexity-medium { background: var(--complexity-medium); color: #9e7c4a; }
+        .tag-complexity-hard { background: var(--complexity-hard); color: #9e5a4a; }
+
+        .ai-reasoning {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--accent-color)08, var(--accent-color)12);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            border-left: 2px solid var(--accent-color);
+        }
+
+        .ai-icon {
+            margin-right: 0.25rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-tertiary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+
+        .empty-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .week-view {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .day-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 1.25rem;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .day-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .day-load {
+            display: flex;
+            gap: 2px;
+        }
+
+        .load-bar {
+            width: 4px;
+            height: 16px;
+            background: var(--border-soft);
+            border-radius: 2px;
+        }
+
+        .load-bar.active {
+            background: var(--accent-color);
+        }
+
+        .inbox-filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-soft);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s var(--ease-out-smooth);
+        }
+
+        .filter-chip.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-overlay);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-top: 1px solid var(--border-soft);
+            padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom));
+            z-index: 100;
+            animation: slideUp 0.6s var(--ease-out-smooth);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+        }
+
+        .nav-container {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            position: relative;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-out-smooth);
+            border-radius: 12px;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .add-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -120%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s var(--ease-out-smooth);
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: translate(-50%, -120%) scale(1); }
+            50% { transform: translate(-50%, -120%) scale(1.05); }
+        }
+
+        .add-button:hover {
+            transform: translate(-50%, -120%) scale(1.1);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .add-button:active {
+            transform: translate(-50%, -120%) scale(0.95);
+        }
+
+        .add-icon {
+            font-size: 2rem;
+            color: white;
+            font-weight: 300;
+        }
+
+        .bottom-sheet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s var(--ease-out-smooth);
+            z-index: 200;
+        }
+
+        .bottom-sheet-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-radius: 24px 24px 0 0;
+            padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+            max-width: 600px;
+            margin: 0 auto;
+            max-height: 85vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.4s var(--ease-out-smooth);
+            z-index: 201;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+
+        .sheet-handle {
+            width: 40px;
+            height: 4px;
+            background: var(--border-accent);
+            border-radius: 2px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .sheet-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .sheet-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .form-field {
+            margin-bottom: 1.5rem;
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .field-optional {
+            font-weight: 400;
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+        }
+
+        .text-input, .text-area {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            transition: all 0.2s var(--ease-out-smooth);
+        }
+
+        .text-area {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .text-input:focus, .text-area:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: var(--bg-secondary);
+        }
+
+        .text-input::placeholder, .text-area::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .icon-selector {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .icon-option {
+            flex: 1;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-soft);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-out-smooth);
+        }
+
+        .icon-option:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .icon-option.selected {
+            border-color: var(--accent-color);
+            background: var(--bg-secondary);
+        }
+
+        .option-icon {
+            font-size: 1.75rem;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .option-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .duration-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .duration-btn {
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-soft);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-out-smooth);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .duration-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        .duration-btn.selected {
+            border-color: var(--accent-color);
+            background: var(--bg-secondary);
+            color: var(--accent-color);
+        }
+
+        .toggle-section {
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle-section:hover {
+            background: var(--border-soft);
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s var(--ease-out-smooth);
+        }
+
+        .toggle-icon.open {
+            transform: rotate(180deg);
+        }
+
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s var(--ease-out-smooth);
+        }
+
+        .expandable-content.open {
+            max-height: 500px;
+        }
+
+        .sheet-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-out-smooth);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-soft);
+        }
+
+        .suggestion-card {
+            background: linear-gradient(135deg, var(--accent-color)10, var(--accent-color)20);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-soft);
+        }
+
+        .suggestion-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .suggestion-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+
+        .encouragement {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        @media (max-width: 480px) {
+            .mood-options {
+                gap: 0.5rem;
+            }
+
+            .mood-btn {
+                padding: 1rem 0.5rem;
+            }
+
+            .mood-emoji {
+                font-size: 2rem;
+            }
+
+            .icon-selector {
+                gap: 0.5rem;
+            }
+
+            .icon-option {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="logo">IDBOX</h1>
+            <p class="greeting" id="greeting"></p>
+        </header>
+
+        <!-- Today Section -->
+        <section id="today-section" class="content-section active">
+            <div class="mood-checkin" id="moodCheckin">
+                <p class="mood-question">Comment te sens-tu ce matin ?</p>
+                <div class="mood-options">
+                    <div class="mood-btn" data-mood="tired">
+                        <span class="mood-emoji">😴</span>
+                        <span class="mood-label">Fatigué</span>
+                    </div>
+                    <div class="mood-btn" data-mood="normal">
+                        <span class="mood-emoji">🙂</span>
+                        <span class="mood-label">Normal</span>
+                    </div>
+                    <div class="mood-btn" data-mood="motivated">
+                        <span class="mood-emoji">🚀</span>
+                        <span class="mood-label">Motivé</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="today-header">
+                <h2 class="section-title">Aujourd'hui</h2>
+                <div class="energy-indicator">
+                    <span class="energy-dot"></span>
+                    <span id="energyLabel">Énergie normale</span>
+                </div>
+            </div>
+
+            <div id="todayTasks"></div>
+        </section>
+
+        <!-- Calendar Section -->
+        <section id="calendar-section" class="content-section">
+            <h2 class="section-title">Cette semaine</h2>
+            <div class="week-view" id="weekView"></div>
+        </section>
+
+        <!-- Inbox Section -->
+        <section id="inbox-section" class="content-section">
+            <h2 class="section-title">Toutes tes tâches</h2>
+            
+            <div class="inbox-filters">
+                <div class="filter-chip active" data-filter="all">Tout</div>
+                <div class="filter-chip" data-filter="easy">Facile</div>
+                <div class="filter-chip" data-filter="medium">Moyen</div>
+                <div class="filter-chip" data-filter="hard">Difficile</div>
+            </div>
+
+            <div id="inboxTasks"></div>
+        </section>
+
+        <!-- Suggestions Section -->
+        <section id="suggestions-section" class="content-section">
+            <h2 class="section-title">Insights & Suggestions</h2>
+            <div id="suggestionsView"></div>
+        </section>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-container">
+                <div class="nav-item active" data-nav="today">
+                    <span class="nav-icon">☀️</span>
+                    <span class="nav-label">Aujourd'hui</span>
+                </div>
+
+                <div class="nav-item" data-nav="calendar">
+                    <span class="nav-icon">📆</span>
+                    <span class="nav-label">Semaine</span>
+                </div>
+
+                <div class="add-button" id="addButton">
+                    <span class="add-icon">+</span>
+                </div>
+
+                <div class="nav-item" data-nav="inbox">
+                    <span class="nav-icon">📥</span>
+                    <span class="nav-label">Tâches</span>
+                </div>
+
+                <div class="nav-item" data-nav="suggestions">
+                    <span class="nav-icon">💡</span>
+                    <span class="nav-label">Insights</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Bottom Sheet Overlay -->
+        <div class="bottom-sheet-overlay" id="sheetOverlay"></div>
+
+        <!-- Bottom Sheet -->
+        <div class="bottom-sheet" id="addTaskSheet">
+            <div class="sheet-handle"></div>
+            <h3 class="sheet-title">On note ça rapidement</h3>
+            <p class="sheet-subtitle">Tu pourras t'en occuper quand ce sera le bon moment 🌱</p>
+
+            <form id="addTaskForm">
+                <!-- Nom de la tâche -->
+                <div class="form-field">
+                    <input 
+                        type="text" 
+                        class="text-input" 
+                        id="taskName" 
+                        placeholder="Quelle est la tâche ?"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <!-- Description -->
+                <div class="form-field">
+                    <label class="field-label">
+                        Description <span class="field-optional">(si tu veux ajouter des détails)</span>
+                    </label>
+                    <textarea 
+                        class="text-area" 
+                        id="taskDescription" 
+                        placeholder="Quelques notes pour toi..."
+                    ></textarea>
+                </div>
+
+                <!-- Complexité -->
+                <div class="form-field">
+                    <label class="field-label">Complexité</label>
+                    <div class="icon-selector">
+                        <div class="icon-option" data-complexity="easy">
+                            <span class="option-icon">🫧</span>
+                            <span class="option-label">Facile</span>
+                        </div>
+                        <div class="icon-option selected" data-complexity="medium">
+                            <span class="option-icon">🌤</span>
+                            <span class="option-label">Moyen</span>
+                        </div>
+                        <div class="icon-option" data-complexity="hard">
+                            <span class="option-icon">🔥</span>
+                            <span class="option-label">Difficile</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Priorité -->
+                <div class="form-field">
+                    <label class="field-label">Priorité</label>
+                    <div class="icon-selector">
+                        <div class="icon-option" data-priority="low">
+                            <span class="option-icon">🌿</span>
+                            <span class="option-label">Basse</span>
+                        </div>
+                        <div class="icon-option selected" data-priority="medium">
+                            <span class="option-icon">🌸</span>
+                            <span class="option-label">Moyenne</span>
+                        </div>
+                        <div class="icon-option" data-priority="high">
+                            <span class="option-icon">⭐</span>
+                            <span class="option-label">Haute</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Durée estimée -->
+                <div class="form-field">
+                    <label class="field-label">
+                        Durée estimée <span class="field-optional">(à peu près)</span>
+                    </label>
+                    <div class="duration-selector">
+                        <div class="duration-btn" data-duration="15">15 min</div>
+                        <div class="duration-btn selected" data-duration="30">30 min</div>
+                        <div class="duration-btn" data-duration="60">1h</div>
+                        <div class="duration-btn" data-duration="90">1h30</div>
+                    </div>
+                </div>
+
+                <!-- Section avancée (repliable) -->
+                <div class="toggle-section" id="advancedToggle">
+                    <span style="font-weight: 500; color: var(--text-secondary);">
+                        Options avancées <span style="font-weight: 400;">(optionnel)</span>
+                    </span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+
+                <div class="expandable-content" id="advancedContent">
+                    <!-- Coût énergétique -->
+                    <div class="form-field">
+                        <label class="field-label">Coût énergétique ressenti</label>
+                        <div class="icon-selector">
+                            <div class="icon-option selected" data-energy="low">
+                                <span class="option-icon">🌱</span>
+                                <span class="option-label">Léger</span>
+                            </div>
+                            <div class="icon-option" data-energy="medium">
+                                <span class="option-icon">💫</span>
+                                <span class="option-label">Moyen</span>
+                            </div>
+                            <div class="icon-option" data-energy="high">
+                                <span class="option-icon">⚡</span>
+                                <span class="option-label">Élevé</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Humeur idéale -->
+                    <div class="form-field">
+                        <label class="field-label">
+                            Humeur idéale pour accomplir cette tâche
+                        </label>
+                        <div class="icon-selector">
+                            <div class="icon-option" data-ideal-mood="tired">
+                                <span class="option-icon">😴</span>
+                                <span class="option-label">Peu importe</span>
+                            </div>
+                            <div class="icon-option" data-ideal-mood="normal">
+                                <span class="option-icon">🙂</span>
+                                <span class="option-label">Énergie normale</span>
+                            </div>
+                            <div class="icon-option selected" data-ideal-mood="motivated">
+                                <span class="option-icon">🚀</span>
+                                <span class="option-label">Motivé</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Moment préféré -->
+                    <div class="form-field">
+                        <label class="field-label">
+                            Moment idéal <span class="field-optional">(si tu as une préférence)</span>
+                        </label>
+                        <div class="icon-selector">
+                            <div class="icon-option" data-time-pref="morning">
+                                <span class="option-icon">🌅</span>
+                                <span class="option-label">Matin</span>
+                            </div>
+                            <div class="icon-option" data-time-pref="afternoon">
+                                <span class="option-icon">☀️</span>
+                                <span class="option-label">Après-midi</span>
+                            </div>
+                            <div class="icon-option" data-time-pref="evening">
+                                <span class="option-icon">🌙</span>
+                                <span class="option-label">Soir</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes libres -->
+                    <div class="form-field">
+                        <label class="field-label">
+                            Notes personnelles <span class="field-optional">(ce que tu ressens)</span>
+                        </label>
+                        <textarea 
+                            class="text-area" 
+                            id="taskNotes" 
+                            placeholder="Comment te sens-tu face à cette tâche ?"
+                            style="min-height: 60px;"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="sheet-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Data Model
+        class Task {
+            constructor(data) {
+                // Données principales
+                this.id = data.id || Date.now();
+                this.name = data.name || '';
+                this.description = data.description || '';
+                this.complexity = data.complexity || 'medium';
+                this.priority = data.priority || 'medium';
+                this.duration = data.duration || 30;
+                this.energyCost = data.energyCost || 'low';
+                
+                // Données temporelles
+                this.createdAt = data.createdAt || Date.now();
+                this.preferredDate = data.preferredDate || null;
+                this.preferredTime = data.preferredTime || null;
+                this.deadline = data.deadline || null;
+                this.recurrence = data.recurrence || 'none';
+                
+                // Données émotionnelles
+                this.idealMood = data.idealMood || 'motivated';
+                this.emotionalWeight = data.emotionalWeight || 'neutral';
+                this.userNotes = data.userNotes || '';
+                
+                // Données intelligentes
+                this.status = data.status || 'active';
+                this.scheduledFor = data.scheduledFor || null;
+                this.completed = data.completed || false;
+                this.reschedulingHistory = data.reschedulingHistory || [];
+                this.lastSuggestedDate = data.lastSuggestedDate || null;
+                this.aiReasoning = data.aiReasoning || '';
+                this.autoTags = data.autoTags || [];
+            }
+
+            toJSON() {
+                return { ...this };
+            }
+        }
+
+        // App State
+        const state = {
+            currentMood: null,
+            tasks: [],
+            todayDate: new Date().toISOString().split('T')[0],
+            moodHistory: {},
+            habits: {},
+            activeSection: 'today',
+            formData: {
+                complexity: 'medium',
+                priority: 'medium',
+                duration: 30,
+                energyCost: 'low',
+                idealMood: 'motivated',
+                timePref: null
+            }
+        };
+
+        // Micro-copy
+        const microCopy = {
+            greetings: [
+                "Bon courage pour aujourd'hui 🌸",
+                "Prends soin de toi aujourd'hui",
+                "Une journée à la fois",
+                "Tu fais de ton mieux, c'est déjà beaucoup"
+            ],
+            moodResponses: {
+                tired: [
+                    "C'est normal de se sentir fatigué. On va y aller doucement.",
+                    "Pas de pression aujourd'hui. Juste les essentiels.",
+                    "Ton bien-être passe avant tout. On reste léger."
+                ],
+                normal: [
+                    "Super, on avance à ton rythme.",
+                    "Une journée équilibrée, c'est parfait.",
+                    "On fait ce qu'on peut, sans se presser."
+                ],
+                motivated: [
+                    "Belle énergie ! On en profite ensemble.",
+                    "C'est parti pour une journée productive !",
+                    "Ton élan est précieux, profitons-en."
+                ]
+            },
+            emptyStates: {
+                today: "Rien de prévu pour aujourd'hui. Tu peux te reposer ou ajouter quelque chose si tu le souhaites 🌿",
+                inbox: "Aucune tâche en attente. Profite de ce moment de calme 🌸",
+                suggestions: "Continue d'utiliser IDBOX quelques jours pour que je comprenne mieux tes habitudes ✨"
+            }
+        };
+
+        // Initialize
+        function init() {
+            loadState();
+            setupEventListeners();
+            updateGreeting();
+            checkTodayMood();
+            updateAccentColor();
+            renderToday();
+            renderWeek();
+            renderInbox();
+            renderSuggestions();
+        }
+
+        // Local Storage
+        function saveState() {
+            const saveData = {
+                ...state,
+                tasks: state.tasks.map(t => t.toJSON())
+            };
+            localStorage.setItem('idbox-state-v2', JSON.stringify(saveData));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('idbox-state-v2');
+            if (saved) {
+                const data = JSON.parse(saved);
+                Object.assign(state, data);
+                state.tasks = data.tasks.map(t => new Task(t));
+            }
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Mood selection
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.addEventListener('click', () => selectMood(btn.dataset.mood));
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => switchSection(item.dataset.nav));
+            });
+
+            // Add button
+            document.getElementById('addButton').addEventListener('click', openAddSheet);
+            document.getElementById('sheetOverlay').addEventListener('click', closeAddSheet);
+            document.getElementById('cancelBtn').addEventListener('click', closeAddSheet);
+
+            // Form
+            document.getElementById('addTaskForm').addEventListener('submit', handleAddTask);
+
+            // Advanced toggle
+            document.getElementById('advancedToggle').addEventListener('click', toggleAdvanced);
+
+            // Form selectors
+            setupFormSelectors();
+
+            // Filters
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    renderInbox(this.dataset.filter);
+                });
+            });
+        }
+
+        function setupFormSelectors() {
+            // Complexity
+            document.querySelectorAll('[data-complexity]').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('[data-complexity]').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    state.formData.complexity = this.dataset.complexity;
+                });
+            });
+
+            // Priority
+            document.querySelectorAll('[data-priority]').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('[data-priority]').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    state.formData.priority = this.dataset.priority;
+                });
+            });
+
+            // Duration
+            document.querySelectorAll('[data-duration]').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('[data-duration]').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    state.formData.duration = parseInt(this.dataset.duration);
+                });
+            });
+
+            // Energy cost
+            document.querySelectorAll('[data-energy]').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('[data-energy]').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    state.formData.energyCost = this.dataset.energy;
+                });
+            });
+
+            // Ideal mood
+            document.querySelectorAll('[data-ideal-mood]').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('[data-ideal-mood]').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    state.formData.idealMood = this.dataset.idealMood;
+                });
+            });
+
+            // Time preference
+            document.querySelectorAll('[data-time-pref]').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('[data-time-pref]').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    state.formData.timePref = this.dataset.timePref;
+                });
+            });
+        }
+
+        function toggleAdvanced() {
+            const content = document.getElementById('advancedContent');
+            const icon = document.querySelector('.toggle-icon');
+            
+            content.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+
+        // Greeting
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            let greeting = '';
+            
+            if (hour < 12) greeting = '☀️ Bonjour';
+            else if (hour < 18) greeting = '🌤 Bon après-midi';
+            else greeting = '🌙 Bonsoir';
+
+            const randomEncouragement = microCopy.greetings[Math.floor(Math.random() * microCopy.greetings.length)];
+            document.getElementById('greeting').textContent = `${greeting} • ${randomEncouragement}`;
+        }
+
+        // Mood Selection
+        function checkTodayMood() {
+            const todayMood = state.moodHistory[state.todayDate];
+            if (todayMood) {
+                state.currentMood = todayMood;
+                document.getElementById('moodCheckin').style.display = 'none';
+                updateEnergyLabel();
+                updateAccentColor();
+            }
+        }
+
+        function selectMood(mood) {
+            document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.closest('.mood-btn').classList.add('selected');
+
+            state.currentMood = mood;
+            state.moodHistory[state.todayDate] = mood;
+
+            // Record habit
+            const day = new Date().getDay();
+            if (!state.habits[day]) state.habits[day] = [];
+            state.habits[day].push(mood);
+
+            saveState();
+            updateAccentColor();
+            updateEnergyLabel();
+            reorganizeTasks();
+
+            setTimeout(() => {
+                document.getElementById('moodCheckin').style.display = 'none';
+                showEncouragement(mood);
+            }, 800);
+        }
+
+        function updateEnergyLabel() {
+            const labels = {
+                tired: '😴 Énergie basse',
+                normal: '🙂 Énergie normale',
+                motivated: '🚀 Haute énergie'
+            };
+            document.getElementById('energyLabel').textContent = labels[state.currentMood] || 'Énergie';
+        }
+
+        function updateAccentColor() {
+            const colors = {
+                tired: '#a8c7e0',
+                normal: '#c4d7bf',
+                motivated: '#f5b88e'
+            };
+            document.documentElement.style.setProperty('--accent-color', colors[state.currentMood] || colors.normal);
+        }
+
+        function showEncouragement(mood) {
+            const responses = microCopy.moodResponses[mood];
+            const message = responses[Math.floor(Math.random() * responses.length)];
+            
+            const encouragement = document.createElement('div');
+            encouragement.className = 'encouragement';
+            encouragement.textContent = message;
+            encouragement.style.animation = 'fadeInUp 0.6s var(--ease-out-smooth)';
+            
+            document.getElementById('todayTasks').insertAdjacentElement('beforebegin', encouragement);
+            setTimeout(() => encouragement.remove(), 4000);
+        }
+
+        // Task Management
+        function handleAddTask(e) {
+            e.preventDefault();
+            const taskName = document.getElementById('taskName').value.trim();
+            
+            if (!taskName) {
+                closeAddSheet();
+                return;
+            }
+
+            const task = new Task({
+                name: taskName,
+                description: document.getElementById('taskDescription').value.trim(),
+                complexity: state.formData.complexity,
+                priority: state.formData.priority,
+                duration: state.formData.duration,
+                energyCost: state.formData.energyCost,
+                idealMood: state.formData.idealMood,
+                preferredTime: state.formData.timePref,
+                userNotes: document.getElementById('taskNotes').value.trim()
+            });
+
+            state.tasks.push(task);
+            saveState();
+            reorganizeTasks();
+            closeAddSheet();
+            resetForm();
+        }
+
+        function resetForm() {
+            document.getElementById('addTaskForm').reset();
+            state.formData = {
+                complexity: 'medium',
+                priority: 'medium',
+                duration: 30,
+                energyCost: 'low',
+                idealMood: 'motivated',
+                timePref: null
+            };
+            
+            // Reset visual selections
+            document.querySelectorAll('[data-complexity]')[1].click();
+            document.querySelectorAll('[data-priority]')[1].click();
+            document.querySelectorAll('[data-duration]')[1].click();
+            document.querySelectorAll('[data-energy]')[0].click();
+            document.querySelectorAll('[data-ideal-mood]')[2].click();
+            
+            // Close advanced section
+            document.getElementById('advancedContent').classList.remove('open');
+            document.querySelector('.toggle-icon').classList.remove('open');
+        }
+
+        // Smart Scheduling with AI Reasoning
+        function reorganizeTasks() {
+            // Clear all schedules
+            state.tasks.forEach(task => {
+                task.scheduledFor = null;
+                task.aiReasoning = '';
+            });
+
+            if (!state.currentMood) return;
+
+            // Get available tasks
+            let availableTasks = state.tasks.filter(t => !t.completed && t.status === 'active');
+
+            // Filter by mood and ideal mood match
+            availableTasks = availableTasks.filter(task => {
+                if (state.currentMood === 'tired') {
+                    return task.complexity === 'easy' && task.energyCost === 'low';
+                } else if (state.currentMood === 'normal') {
+                    return task.complexity !== 'hard' && task.energyCost !== 'high';
+                } else {
+                    return true; // All tasks available
+                }
+            });
+
+            // Sort by priority and ideal mood match
+            availableTasks.sort((a, b) => {
+                const priorityOrder = { high: 3, medium: 2, low: 1 };
+                const moodMatch = (t) => t.idealMood === state.currentMood ? 1 : 0;
+                
+                return (priorityOrder[b.priority] + moodMatch(b)) - 
+                       (priorityOrder[a.priority] + moodMatch(a));
+            });
+
+            // Schedule tasks with AI reasoning
+            const maxTasks = state.currentMood === 'tired' ? 2 : 
+                           state.currentMood === 'normal' ? 3 : 5;
+
+            availableTasks.slice(0, maxTasks).forEach(task => {
+                task.scheduledFor = state.todayDate;
+                task.lastSuggestedDate = state.todayDate;
+                task.aiReasoning = generateAIReasoning(task);
+                
+                // Add to rescheduling history
+                task.reschedulingHistory.push({
+                    date: state.todayDate,
+                    mood: state.currentMood,
+                    reason: task.aiReasoning
+                });
+            });
+
+            saveState();
+            renderToday();
+            renderWeek();
+            renderInbox();
+        }
+
+        function generateAIReasoning(task) {
+            const reasons = [];
+            
+            // Mood match
+            if (task.idealMood === state.currentMood) {
+                reasons.push("ton énergie correspond à ce qui est idéal pour cette tâche");
+            }
+            
+            // Priority
+            if (task.priority === 'high') {
+                reasons.push("c'est une priorité importante");
+            }
+            
+            // Energy cost
+            if (state.currentMood === 'tired' && task.energyCost === 'low') {
+                reasons.push("elle demande peu d'énergie");
+            } else if (state.currentMood === 'motivated' && task.energyCost === 'high') {
+                reasons.push("tu as l'énergie pour t'y attaquer");
+            }
+            
+            // Complexity match
+            if (state.currentMood === 'tired' && task.complexity === 'easy') {
+                reasons.push("c'est une tâche simple, parfaite pour aujourd'hui");
+            } else if (state.currentMood === 'motivated' && task.complexity === 'hard') {
+                reasons.push("c'est le bon moment pour une tâche plus complexe");
+            }
+
+            // Duration
+            if (task.duration <= 30) {
+                reasons.push("ça ne prendra pas longtemps");
+            }
+
+            const intro = "Je te la propose aujourd'hui parce que ";
+            return intro + reasons.slice(0, 2).join(" et ") + ".";
+        }
+
+        // Rendering
+        function renderToday() {
+            const container = document.getElementById('todayTasks');
+            const todayTasks = state.tasks.filter(t => t.scheduledFor === state.todayDate && !t.completed);
+
+            if (todayTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🌸</div>
+                        <p class="empty-text">${microCopy.emptyStates.today}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = todayTasks.map((task, index) => `
+                <div class="task-card priority-${task.priority}" style="animation-delay: ${index * 0.1}s">
+                    <div class="task-header">
+                        <div>
+                            <div class="task-name">${task.name}</div>
+                            ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="task-meta">
+                        <span class="task-tag tag-complexity-${task.complexity}">
+                            ${getComplexityLabel(task.complexity)}
+                        </span>
+                        <span class="task-tag">${getPriorityIcon(task.priority)}</span>
+                        <span class="task-tag">⏱ ${task.duration} min</span>
+                        <span class="task-tag">${getEnergyCostIcon(task.energyCost)}</span>
+                    </div>
+                    ${task.aiReasoning ? `
+                        <div class="ai-reasoning">
+                            <span class="ai-icon">💡</span>${task.aiReasoning}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderWeek() {
+            const container = document.getElementById('weekView');
+            const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            
+            container.innerHTML = days.map((day, index) => {
+                const dayTasks = state.tasks.filter(t => !t.completed && t.status === 'active');
+                const loadLevel = Math.min(5, dayTasks.length);
+                
+                return `
+                    <div class="day-card">
+                        <div class="day-header">
+                            <div class="day-name">${day}</div>
+                            <div class="day-load">
+                                ${Array(5).fill(0).map((_, i) => 
+                                    `<div class="load-bar ${i < loadLevel ? 'active' : ''}"></div>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-tertiary);">
+                            ${dayTasks.length > 0 ? `${dayTasks.length} tâche${dayTasks.length > 1 ? 's' : ''}` : 'Repos'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderInbox(filter = 'all') {
+            const container = document.getElementById('inboxTasks');
+            let tasks = state.tasks.filter(t => !t.completed);
+
+            if (filter !== 'all') {
+                tasks = tasks.filter(t => t.complexity === filter);
+            }
+
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📥</div>
+                        <p class="empty-text">${microCopy.emptyStates.inbox}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = tasks.map((task, index) => `
+                <div class="task-card priority-${task.priority}" style="animation-delay: ${index * 0.05}s">
+                    <div class="task-header">
+                        <div>
+                            <div class="task-name">${task.name}</div>
+                            ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="task-meta">
+                        <span class="task-tag tag-complexity-${task.complexity}">
+                            ${getComplexityLabel(task.complexity)}
+                        </span>
+                        <span class="task-tag">${getPriorityIcon(task.priority)}</span>
+                        <span class="task-tag">⏱ ${task.duration} min</span>
+                        ${task.scheduledFor ? `<span class="task-tag">📅 Planifié</span>` : ''}
+                        ${task.status === 'sleeping' ? `<span class="task-tag">😴 En sommeil</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderSuggestions() {
+            const container = document.getElementById('suggestionsView');
+            const suggestions = generateSuggestions();
+
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💡</div>
+                        <p class="empty-text">${microCopy.emptyStates.suggestions}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = suggestions.map(s => `
+                <div class="suggestion-card">
+                    <div class="suggestion-icon">${s.icon}</div>
+                    <p class="suggestion-text">${s.text}</p>
+                </div>
+            `).join('');
+        }
+
+        function generateSuggestions() {
+            const suggestions = [];
+            
+            // Mood analysis
+            const moodCounts = Object.values(state.moodHistory).reduce((acc, mood) => {
+                acc[mood] = (acc[mood] || 0) + 1;
+                return acc;
+            }, {});
+
+            if (moodCounts.tired > 3) {
+                suggestions.push({
+                    icon: '😴',
+                    text: 'Tu sembles souvent fatigué ces derniers temps. Pense à te ménager des pauses régulières et à respecter ton rythme.'
+                });
+            }
+
+            if (moodCounts.motivated > 5) {
+                suggestions.push({
+                    icon: '🚀',
+                    text: 'Belle constance dans ton énergie ! Continue sur cette lancée, tu gères vraiment bien.'
+                });
+            }
+
+            // Task overload
+            const activeTasks = state.tasks.filter(t => !t.completed && t.status === 'active');
+            if (activeTasks.length > 10) {
+                suggestions.push({
+                    icon: '🌿',
+                    text: 'Tu as beaucoup de tâches. N\'hésite pas à en déléguer certaines ou à les mettre en sommeil. Ta santé mentale compte.'
+                });
+            }
+
+            // High energy tasks when often tired
+            if (moodCounts.tired > moodCounts.motivated) {
+                const highEnergy = activeTasks.filter(t => t.energyCost === 'high');
+                if (highEnergy.length > 0) {
+                    suggestions.push({
+                        icon: '💫',
+                        text: `Tu as ${highEnergy.length} tâche(s) coûteuse(s) en énergie. Attends un jour où tu te sentiras plus motivé pour les aborder.`
+                    });
+                }
+            }
+
+            return suggestions;
+        }
+
+        // Bottom Sheet
+        function openAddSheet() {
+            document.getElementById('sheetOverlay').classList.add('active');
+            document.getElementById('addTaskSheet').classList.add('active');
+            setTimeout(() => document.getElementById('taskName').focus(), 400);
+        }
+
+        function closeAddSheet() {
+            document.getElementById('sheetOverlay').classList.remove('active');
+            document.getElementById('addTaskSheet').classList.remove('active');
+        }
+
+        // Navigation
+        function switchSection(section) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`[data-nav="${section}"]`).classList.add('active');
+
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${section}-section`).classList.add('active');
+
+            state.activeSection = section;
+        }
+
+        // Helpers
+        function getComplexityLabel(complexity) {
+            const labels = { easy: 'Facile', medium: 'Moyen', hard: 'Difficile' };
+            return labels[complexity];
+        }
+
+        function getPriorityIcon(priority) {
+            const icons = { low: '🌿', medium: '🌸', high: '⭐' };
+            return icons[priority];
+        }
+
+        function getEnergyCostIcon(cost) {
+            const icons = { low: '🌱', medium: '💫', high: '⚡' };
+            return icons[cost];
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
